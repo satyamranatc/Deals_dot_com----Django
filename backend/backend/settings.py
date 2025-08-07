@@ -25,10 +25,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "City",
-    "Property",
     "rest_framework",
     "corsheaders",
+    "City",
+    "Property",
 ]
 
 MIDDLEWARE = [
