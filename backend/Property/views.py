@@ -2,6 +2,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .serializers import PropertySerializer
+from .serializers import PropertyDetailSerializer
+
 from .models import PropertyModel
 
 from City.serializers import CitySerializer
@@ -11,7 +13,7 @@ from City.models import CityModel
 @api_view(['GET'])
 def PropertyList(request):
     properties = PropertyModel.objects.all()
-    serializer = PropertySerializer(properties, many=True)
+    serializer = PropertyDetailSerializer(properties, many=True)
     return Response(serializer.data)
 
 
@@ -19,6 +21,7 @@ def PropertyList(request):
 def PropertyDetail(request, id):
     property = PropertyModel.objects.get(id=id)
     serializer = PropertySerializer(property)
+   
     return Response(serializer.data)
 
 
@@ -26,15 +29,18 @@ def PropertyDetail(request, id):
 def PropertyCreate(request):
     serializer = PropertySerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        # city = CityModel.objects.get(id=PropertyModel.propertyCity.id)
-        print(PropertyModel.propertyCity)
-        # print(city)
-        # print(city.total_properties)
-        # city.total_properties += 1
-        # city.save()
+        property_instance = serializer.save()  # Save property
+
+        # Get the related city
+        if property_instance.propertyCity:
+            city = property_instance.propertyCity
+            print(city)
+            city.total_properties += 1
+            city.save()  # Save the updated city
+
         return Response(serializer.data)
     return Response(serializer.errors)
+
 
 
 @api_view(['PUT'])
@@ -49,6 +55,11 @@ def PropertyUpdate(request, id):
 
 @api_view(['DELETE'])
 def PropertyDelete(request, id):
-    property = PropertyModel.objects.get(id=id)
-    property.delete()
+    property_instance = PropertyModel.objects.get(id=id)
+    if property_instance.propertyCity:
+            city = property_instance.propertyCity
+            print(city)
+            city.total_properties -= 1
+            city.save()  # Save the up
+    property_instance.delete()
     return Response("Property deleted")
